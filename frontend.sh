@@ -3,6 +3,7 @@
 source ./common.sh
 
 check_root_access
+VALIDATE
 
 #installing Nginx
 
