@@ -36,3 +36,9 @@ VALIDATE () {
         exit 1
 fi
 }
+
+print_time(){
+    END_TIME=$(date +%s)
+    TOTAL_TIME=$(($END_TIME - $START_TIME))
+    echo -e "Script executed successfully, $Y Time taken: $TOTAL_TIME seconds $N"
+}
