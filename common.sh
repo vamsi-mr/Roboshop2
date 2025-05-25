@@ -14,6 +14,16 @@ SCRIPT_DIR=$PWD
     mkdir -p $LOGSFOLDER
     echo "Script started executing at: $(date)" | tee -a $LOG_FILE
 
+VALIDATE() {
+    if [ $1 -eq 0 ]
+    then
+        echo -e "$G $2 is ...... SUCCESS $N" | tee -a $LOG_FILE
+    else 
+        echo -e "$R $2 is ...... FAILURE $N" | tee -a $LOG_FILE
+        exit 1
+fi
+}
+
 
 check_root_access() {
     if [ $USERID -ne 0 ]
@@ -26,15 +36,6 @@ fi
 }
 
 
-VALIDATE() {
-    if [ $1 -eq 0 ]
-    then
-        echo -e "$G $2 is ...... SUCCESS $N" | tee -a $LOG_FILE
-    else 
-        echo -e "$R $2 is ...... FAILURE $N" | tee -a $LOG_FILE
-        exit 1
-fi
-}
 
 app_setup() {
         id roboshop
@@ -59,6 +60,7 @@ app_setup() {
 }
 
 
+
 nodejs_setup(){
     dnf module disable nodejs -y &>>$LOG_FILE
     VALIDATE $? "Disabling Nodejs"
@@ -72,6 +74,8 @@ nodejs_setup(){
     npm install &>>$LOG_FILE
     VALIDATE $? "Installing Dependencies"
 }
+
+
 
 systemd_setup(){
     cp $SCRIPT_DIR/$app_name.service /etc/systemd/system/$app_name.service
@@ -87,6 +91,8 @@ systemd_setup(){
     VALIDATE $? "Starting $app_name"
 }
 
+
+
 maven_setup(){
     dnf install maven -y
     VALIDATE $? "Installing Maven and Java"
@@ -99,6 +105,7 @@ maven_setup(){
 }
 
 
+
 python_setup(){
     dnf install python3 gcc python3-devel -y &>>$LOG_FILE
     VALIDATE $? "Install Python3 packages"
@@ -107,6 +114,7 @@ python_setup(){
     VALIDATE $? "Installing dependencies"
 
 }
+
 
 
 print_time(){
