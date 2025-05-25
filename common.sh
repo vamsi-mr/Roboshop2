@@ -6,7 +6,7 @@ R="\e[31m"
 G="\e[32m"
 Y="\e[33m"
 N="\e[0m"
-LOGSFOLDER="/var/log/roboshop-logs
+LOGSFOLDER="/var/log/roboshop-logs"
 SCRIPT_NAME=$(echo $0 | cut -d "." -f1)
 LOG_FILE=$LOGSFOLDER/$SCRIPT_NAME
 SCRIPT_DIR=$PWD
@@ -16,7 +16,6 @@ SCRIPT_DIR=$PWD
 
 
 check_root_access () {
-
     if [ $USERID -ne 0 ]
     then    
         echo -e "$R ERROR : Please run with root access $N" | tee -a $LOG_FILE
