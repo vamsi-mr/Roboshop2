@@ -4,8 +4,8 @@ source ./common.sh
 app_name=catalogue
 
 check_root_access
-nodejs_setup
 app_setup
+nodejs_setup
 systemd_setup
 
 

@@ -45,10 +45,13 @@ app_setup() {
         else 
             echo -e "$Y System user roboshop is already created ..... SKIPPING $N"
     fi
-
+    
     curl -o /tmp/$app_name.zip https://roboshop-artifacts.s3.amazonaws.com/$app_name-v3.zip &>>$LOG_FILE
     VALIDATE $? "Downloading $app_name file"
 
+    mkdir -p /app 
+    VALIDATE $? "Creating app directory"
+    
     rm -rf /app/*
     cd /app
     unzip /tmp/$app_name.zip &>>$LOG_FILE
@@ -65,9 +68,6 @@ nodejs_setup(){
 
     dnf install nodejs -y &>>$LOG_FILE
     VALIDATE $? "Installing Nodejs"
-
-    mkdir -p /app &>>$LOG_FILE
-    VALIDATE $? "Creating App directory"
 
     npm install &>>$LOG_FILE
     VALIDATE $? "Installing Dependencies"
