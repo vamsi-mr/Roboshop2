@@ -15,7 +15,7 @@ SCRIPT_DIR=$PWD
     echo "Script started executing at: $(date)" | tee -a $LOG_FILE
 
 
-check_root_access () {
+check_root_access() {
     if [ $USERID -ne 0 ]
     then    
         echo -e "$R ERROR : Please run with root access $N" | tee -a $LOG_FILE
@@ -26,7 +26,7 @@ fi
 }
 
 
-VALIDATE () {
+VALIDATE() {
     if [ $1 -eq 0 ]
     then
         echo -e "$G $2 is ...... SUCCESS $N" | tee -a $LOG_FILE
@@ -34,6 +34,57 @@ VALIDATE () {
         echo -e "$R $2 is ...... FAILURE $N" | tee -a $LOG_FILE
         exit 1
 fi
+}
+
+app_setup() {
+        id roboshop
+        if [ $? -ne 0 ]
+        then
+            useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>$LOG_FILE
+            VALIDATE $? "Creating Roboshop user"
+        else 
+            echo -e "$Y System user roboshop is already created ..... SKIPPING $N"
+    fi
+
+    curl -o /tmp/$app_name.zip https://roboshop-artifacts.s3.amazonaws.com/$app_name-v3.zip &>>$LOG_FILE
+    VALIDATE $? "Downloading $app_name file"
+
+    rm -rf /app/*
+    cd /app
+    unzip /tmp/$app_name.zip &>>$LOG_FILE
+    VALIDATE $? "Unzipping $app_name file"
+}
+
+
+nodejs_setup(){
+    dnf module disable nodejs -y &>>$LOG_FILE
+    VALIDATE $? "Disabling Nodejs"
+
+    dnf module enable nodejs:20 -y &>>$LOG_FILE
+    VALIDATE $? "Enabling Nodejs"
+
+    dnf install nodejs -y &>>$LOG_FILE
+    VALIDATE $? "Installing Nodejs"
+
+    mkdir -p /app &>>$LOG_FILE
+    VALIDATE $? "Creating App directory"
+
+    npm install &>>$LOG_FILE
+    VALIDATE $? "Installing Dependencies"
+}
+
+systemd_setup(){
+    cp $SCRIPT_DIR/$app_name.service /etc/systemd/system/$app_name.service
+    VALIDATE $? "Copying $app_name service file"
+    
+    systemctl daemon-reload &>>$LOG_FILE
+    VALIDATE $? "Daemon reloading"
+
+    systemctl enable $app_name &>>$LOG_FILE
+    VALIDATE $? "Enabling $app_name"
+
+    systemctl start $app_name &>>$LOG_FILE
+    VALIDATE $? "Starting $app_name"
 }
 
 print_time(){
