@@ -1,38 +1,21 @@
 #!/bin/bash
 
 AMI_ID="ami-09c813fb71547fc4f"
-SG_ID="sg-02d7436ae856ae341" # replace with your SG ID
+INSTANCE_TYPE="t2.micro"
+SG_ID="sg-02d7436ae856ae341"
 INSTANCES=("mongodb" "redis" "mysql" "rabbitmq" "catalogue" "user" "cart" "shipping" "payment" "dispatch" "frontend")
-ZONE_ID="Z06734122W0TQFHN7RZBR" # replace with your ZONE ID
-DOMAIN_NAME="ravada.site" # replace with your domain
 
-#for instance in ${INSTANCES[@]}
-for instance in ${INSTANCES[@]}
+for INSTANCE in "${INSTNACES[@]}"; 
 do
-    INSTANCE_ID=$(aws ec2 run-instances --image-id ami-09c813fb71547fc4f --instance-type t2.micro --security-group-ids sg-02d7436ae856ae341 --tag-specifications "ResourceType=instance,Tags=[{Key=Name, Value=$instance}]" --query "Instances[0].InstanceId" --output text)
-    if [ $instance != "frontend" ]
-    then
-        IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].PrivateIpAddress" --output text)
-    else
-        IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
-    fi
-    echo "$instance IP address: $IP"
+  echo "Creating $INSTANCE instance"
 
-    aws route53 change-resource-record-sets \
-    --hosted-zone-id $ZONE_ID \
-    --change-batch '
-    {
-        "Comment": "Creating or Updating a record set for cognito endpoint"
-        ,"Changes": [{
-        "Action"              : "UPSERT"
-        ,"ResourceRecordSet"  : {
-            "Name"              : "'$instance'.'$RECORD_NAME'"
-            ,"Type"             : "A"
-            ,"TTL"              : 1
-            ,"ResourceRecords"  : [{
-                "Value"         : "'$IP'"
-            }]
-        }
-        }]
-    }'
+  INSTANCE_ID=$(aws ec2 run-instances \
+    --image-id "$AMI_ID" \
+    --instance-type "$INSTANCE_TYPE" \
+    --security-group-ids "$SECURITY_GROUP_ID" \
+    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$instance-latest},{Key=service,Value=$instance}]" \
+    --query "Instances[0].InstanceId" \
+    --output text)
+
+  echo "Created instance with ID: $INSTANCE_ID"
 done
